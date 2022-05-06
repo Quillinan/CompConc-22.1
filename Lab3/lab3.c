@@ -8,8 +8,8 @@ int nthreads;
 float *array;
 
 typedef struct{
+    float maxVal;
     float minVal;
-    float maxVal
 } arrayValue;
 
 void * tarefa(void * arg){
@@ -21,34 +21,38 @@ void * tarefa(void * arg){
     arrayValue * values;
     values = (arrayValue *)malloc(sizeof(arrayValue));
 
-    if(values == NULL){exit(1);}
+    if(values == NULL){
+        fprintf(stderr, "ERRO--malloc\n");
+        exit(1);
+    }
 
     if(id == nthreads -1) fim = N;
     else fim = ini+tamBloco;
 
-    values->minVal = array[ini];
     values->maxVal = array[ini];
+    values->minVal = array[ini];
+
     for(long long int i=ini; i<fim; i++){
-        if(array[i] < values->minVal){
-            values->minVal = array[i];
-        }
-        else if(array[i] > values->maxVal){
+        if(array[i] > values->maxVal){
             values->maxVal = array[i];
+        }
+        else if(array[i] < values->minVal){
+            values->minVal = array[i];
         }
     }
 
     pthread_exit((void*) values);
 }
 
-void tarefaSequencial(float **inputArray, arrayValue *seqValue, int numE){
-    for (long long int i = 1 ; i < numE; i++){
-        if ((*inputArray[i] < seqValue->minVal)){
-            seqValue->minVal = (*inputArray)[i];
-        }
-        if ((*inputArray[i] > seqValue->maxVal)){
-            seqValue->maxVal = (*inputArray)[i];
-        }
+void tarefaSequencial(float **inputArray, arrayValue *seqValue, int Num) {
+  for (long long int i = 1; i < Num; i++) {
+    if ((*inputArray)[i] > seqValue->maxVal) {
+      seqValue->maxVal = (*inputArray)[i];
     }
+    if ((*inputArray)[i] < seqValue->minVal) {
+      seqValue->minVal = (*inputArray)[i];
+    }
+  }
 }
 
 void initThreads(pthread_t **tid, arrayValue *concValue, int numThreads){
@@ -73,17 +77,17 @@ void initThreads(pthread_t **tid, arrayValue *concValue, int numThreads){
             exit(4);
         }
 
-        if(threadsValue->minVal > concValue->minVal) {
-            concValue->minVal = threadsValue->minVal;
+        if(threadsValue->maxVal > concValue->maxVal) {
+            concValue->maxVal = threadsValue->maxVal;
         }
 
-        if(threadsValue->maxVal < concValue->maxVal) {
-            concValue->maxVal = threadsValue->maxVal;
+        if(threadsValue->minVal < concValue->minVal) {
+            concValue->minVal = threadsValue->minVal;
         }
     }
 }
 
-void checaIguadade(arrayValue *seqValue, arrayValue *concValue){
+void checaIgualdade(arrayValue *seqValue, arrayValue *concValue){
     if(seqValue->maxVal == concValue->maxVal && seqValue->minVal == concValue->minVal){
         printf("OK\n");
     }else{
@@ -115,12 +119,14 @@ int main(int argc, char *argv[]){
 
     concValue.maxVal = seqValue.maxVal = array[0];
     concValue.minVal = seqValue.minVal = array[0];
+
     GET_TIME(ini);
     tarefaSequencial(&array, &seqValue, N);
     GET_TIME(fim);
     printf("Tempo sequencial: %lf\n", fim-ini);
+
     GET_TIME(ini);
-    iniThreads(&tid, &concValue, nthreads);
+    initThreads(&tid, &concValue, nthreads);
     GET_TIME(fim);
     printf("Tempo concorrente: %lf\n", fim-ini);
 
