@@ -102,7 +102,7 @@ void checaIgualdade(arrayValue *seqValue, arrayValue *concValue){
 //fluxo princial
 int main(int argc, char *argv[]){
     arrayValue seqValue, concValue;
-    double ini, fim;
+    double ini, fim, tempSeq, tempConc;
     pthread_t *tid;
     if(argc < 3){
         fprintf(stderr, "Digite: %s <dimensao do vetor> <numero de threads>\n", argv[0]);
@@ -120,6 +120,7 @@ int main(int argc, char *argv[]){
     }
 
     //preenche o vetor  de entrada
+    srand(time(NULL));
     for(long int i=0;i<N;i++)
         array[i] = rand() % N;
 
@@ -131,15 +132,15 @@ int main(int argc, char *argv[]){
     GET_TIME(ini);
     tarefaSequencial(&array, &seqValue, N);
     GET_TIME(fim);
-    tempSeq = fim-ini
+    tempSeq = fim-ini;
     printf("Tempo sequencial: %lf\n", tempSeq);
 
      //criar as threads
     GET_TIME(ini);
     initThreads(&tid, &concValue, nthreads);
     GET_TIME(fim);
-    tempConc = fim-ini
-    printf("Tempo concorrente: %lf\n", fim-ini);
+    tempConc = fim-ini;
+    printf("Tempo concorrente: %lf\n", tempConc);
     
     //tempo aceleração
     printf("Aceleração: %lf\n", tempSeq/tempConc);
