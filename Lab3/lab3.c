@@ -12,6 +12,7 @@ typedef struct{
     float minVal;
 } arrayValue;
 
+//fluxo das threads
 void * tarefa(void * arg){
     long long id = (long int) arg;
     long long int tamBloco = N/nthreads;
@@ -41,6 +42,7 @@ void * tarefa(void * arg){
         }
     }
 
+    //retorna o resultado da soma local
     pthread_exit((void*) values);
 }
 
@@ -55,6 +57,7 @@ void tarefaSequencial(float **inputArray, arrayValue *seqValue, int Num) {
   }
 }
 
+// aloca memoria para as estruturas de dados
 void initThreads(pthread_t **tid, arrayValue *concValue, int numThreads){
     (*tid) = (pthread_t *) malloc(sizeof(pthread_t) * nthreads);
     if (*tid == NULL) {
@@ -62,6 +65,7 @@ void initThreads(pthread_t **tid, arrayValue *concValue, int numThreads){
         exit(2);
     }
 
+    // cria as threads
     for(long int i = 0; i < nthreads; i++){
         if(pthread_create((*tid) + i, NULL, tarefa, (void *) i)){
             fprintf(stderr, "ERRO--create\n");
@@ -105,6 +109,7 @@ int main(int argc, char *argv[]){
         return 1;
     }
 
+    //converte para inteiro
     N = atoi(argv[1]);
     nthreads = atoi(argv[2]);
 
@@ -114,24 +119,30 @@ int main(int argc, char *argv[]){
         return 2;
     }
 
+    //preenche o vetor  de entrada
     for(long int i=0;i<N;i++)
-        array[i] = 1000 * (float)rand() / (float)RAND_MAX;
+        array[i] = rand() % N;
 
+    //atribuindo valor das estruturas ao primeiro item do array
     concValue.maxVal = seqValue.maxVal = array[0];
     concValue.minVal = seqValue.minVal = array[0];
 
+    //checagem sequencial dos elementos
     GET_TIME(ini);
     tarefaSequencial(&array, &seqValue, N);
     GET_TIME(fim);
     printf("Tempo sequencial: %lf\n", fim-ini);
 
+     //criar as threads
     GET_TIME(ini);
     initThreads(&tid, &concValue, nthreads);
     GET_TIME(fim);
     printf("Tempo concorrente: %lf\n", fim-ini);
 
+    //prova real da função
     checaIgualdade(&seqValue, &concValue);
 
+    //libere memoria alocada
     free(array);
     free(tid);
     return 0;
