@@ -114,7 +114,7 @@ int main(int argc, char *argv[]){
     //preenche o vetor  de entrada
     srand(time(NULL));
     for(long int i=0;i<N;i++)
-        array[i] = (float)rand() / (float)RAND_MAX;
+        array[i] = (float)rand() / (float)RAND_MAX *N;
 
     //atribuindo valor das estruturas ao primeiro item do array
     concValue.maxVal = seqValue.maxVal = array[0];
@@ -134,6 +134,8 @@ int main(int argc, char *argv[]){
     tempConc = fim-ini;
     printf("Tempo concorrente: %lf\n", tempConc);
     
+    //threads usadas
+    printf("Threads usadas: %d\n", nthreads);
     //tempo aceleração
     printf("Aceleração: %lf\n", tempSeq/tempConc);
 
