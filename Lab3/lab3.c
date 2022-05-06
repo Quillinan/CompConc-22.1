@@ -131,13 +131,18 @@ int main(int argc, char *argv[]){
     GET_TIME(ini);
     tarefaSequencial(&array, &seqValue, N);
     GET_TIME(fim);
-    printf("Tempo sequencial: %lf\n", fim-ini);
+    tempSeq = fim-ini
+    printf("Tempo sequencial: %lf\n", tempSeq);
 
      //criar as threads
     GET_TIME(ini);
     initThreads(&tid, &concValue, nthreads);
     GET_TIME(fim);
+    tempConc = fim-ini
     printf("Tempo concorrente: %lf\n", fim-ini);
+    
+    //tempo aceleração
+    printf("Aceleração: %lf\n", tempSeq/tempConc);
 
     //prova real da função
     checaIgualdade(&seqValue, &concValue);
