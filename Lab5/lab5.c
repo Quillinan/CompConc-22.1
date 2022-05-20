@@ -10,7 +10,8 @@ int x = 0;
 pthread_mutex_t x_mutex; 
 pthread_cond_t x_cond, y_cond;
 
-void *VolteSempre (void *t) {
+// Thread 1
+void *thread1 (void *t) {
   pthread_mutex_lock(&x_mutex);
   while (x < 4) {
     pthread_cond_wait(&y_cond, &x_mutex);
@@ -22,7 +23,8 @@ void *VolteSempre (void *t) {
   pthread_exit(NULL);
 }
 
-void *AVontade (void *t) {
+// Thread 2
+void *thread2 (void *t) {
   pthread_mutex_lock(&x_mutex);
   if (x == 0) {
     pthread_cond_wait(&x_cond, &x_mutex);
@@ -39,7 +41,8 @@ void *AVontade (void *t) {
   pthread_exit(NULL);
 }
 
-void *SenteSe (void *t) {
+// Thread 3
+void *thread3 (void *t) {
   pthread_mutex_lock(&x_mutex);
   if (x == 0) {
     pthread_cond_wait(&x_cond, &x_mutex);
@@ -56,7 +59,8 @@ void *SenteSe (void *t) {
   pthread_exit(NULL);
 }
 
-void *CopoAgua (void *t) {
+// Thread 4
+void *thread4 (void *t) {
   pthread_mutex_lock(&x_mutex);
   if (x == 0) {
     pthread_cond_wait(&x_cond, &x_mutex);
@@ -66,52 +70,50 @@ void *CopoAgua (void *t) {
   printf("Aceita um copo d'agua?\n");
 
   pthread_mutex_lock(&x_mutex);
-  x++; // atualiza o total de mensagens
-  pthread_cond_signal(&y_cond); // sinaliza caso a thread 1 esteja esperando
+  x++;
+  pthread_cond_signal(&y_cond);
   pthread_mutex_unlock(&x_mutex); 
 
   pthread_exit(NULL);
 }
 
-void *BemVindo (void *t) {
-  printf("Seja bem-vindo! \n");
+// Thread 5
+void *thread5 (void *t) {
+  printf("Seja bem-vindo!\n");
 
   pthread_mutex_lock(&x_mutex);
-  x++; // atualiza o total de mensagens
-  pthread_cond_broadcast(&x_cond); // sinaliza as outras threads que estejam esperando para que possam imprimir
+  x++;
+  pthread_cond_broadcast(&x_cond);
   pthread_mutex_unlock(&x_mutex);
 
   pthread_exit(NULL);
 }
 
-// criar as threads
+// Cria as threads
 void createThreads(pthread_t *tids, int nthreads) {
   int error;
 
-  error = pthread_create(&tids[0], NULL, AVontade, NULL);
-  error = pthread_create(&tids[1], NULL, BemVindo, NULL);
-  error = pthread_create(&tids[2], NULL, SenteSe, NULL);
-  error = pthread_create(&tids[3], NULL, CopoAgua, NULL);
-  error = pthread_create(&tids[4], NULL, VolteSempre, NULL);
+  error = pthread_create(&tids[0], NULL, thread5, NULL);
+  error = pthread_create(&tids[1], NULL, thread2, NULL);
+  error = pthread_create(&tids[2], NULL, thread3, NULL);
+  error = pthread_create(&tids[3], NULL, thread4, NULL);
+  error = pthread_create(&tids[4], NULL, thread1, NULL);
 
   if (error) {
-    fprintf(stderr, "ERRO--pthread_create()\n");
+    fprintf(stderr, "ERRO--create()\n");
     exit(1);
   }
 }
 
-// aguarda o termino das threads
+// Espera todas as threads completarem
 void joinThreads(pthread_t *tids, int nthreads) {
   for (int i = 0; i < nthreads; i++) {
     if (pthread_join(tids[i], NULL)) {
-      fprintf(stderr, "ERRO--pthread_join()\n");
+      fprintf(stderr, "ERRO--join()\n");
       exit(2);
     }
   }
 }
-
-pthread_mutex_t x_mutex; 
-pthread_cond_t x_cond, y_cond;
 
 // inicializa as variaveis de exclusao mutua e condicao
 void init(pthread_mutex_t *x_mutex, pthread_cond_t *x_cond, pthread_cond_t *y_cond) {
@@ -120,13 +122,14 @@ void init(pthread_mutex_t *x_mutex, pthread_cond_t *x_cond, pthread_cond_t *y_co
   pthread_cond_init (y_cond, NULL);
 }
 
-// desaloca as variaveis criadas
+// Desaloca variaveis e termina
 void destroy(pthread_mutex_t *x_mutex, pthread_cond_t *x_cond, pthread_cond_t *y_cond) {
   pthread_mutex_destroy(x_mutex);
   pthread_cond_destroy(x_cond);
   pthread_cond_destroy(y_cond);
 }
 
+// Funcao principal
 int main(int argc, char *argv[]) {
   pthread_t tids[NTHREADS];
   
